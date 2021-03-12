@@ -1,0 +1,12 @@
+﻿  Netman.cpp
+  NetmanDlg.cpp
+C:\Users\yeom\source\repos\Netman\Netman\NetmanDlg.cpp(133,38): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+C:\Users\yeom\source\repos\Netman\Netman\NetmanDlg.cpp(137,38): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+C:\Users\yeom\source\repos\Netman\Netman\NetmanDlg.cpp(226,17): warning C4002: 함수 같은 매크로 호출 'TEXT'에 대해 인수가 너무 많습니다.
+C:\Users\yeom\source\repos\Netman\Netman\NetmanDlg.cpp(249,17): warning C4002: 함수 같은 매크로 호출 'TEXT'에 대해 인수가 너무 많습니다.
+C:\Users\yeom\source\repos\Netman\Netman\NetmanDlg.cpp(220,2): warning C4996: 'scanf': This function or variable may be unsafe. Consider using scanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\yeom\source\repos\Netman\Netman\NetmanDlg.cpp(266,53): warning C4302: '형식 캐스트': 'DWORD (__stdcall *)(void)'에서 'unsigned short'(으)로 잘립니다.
+C:\Users\yeom\source\repos\Netman\Netman\NetmanDlg.cpp(279,48): warning C4996: 'inet_addr': Use inet_pton() or InetPton() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+C:\Users\yeom\source\repos\Netman\Netman\NetmanDlg.cpp(257,10): warning C4101: 'wsaData' :참조되지 않은 지역 변수입니다.
+  코드를 생성하고 있습니다...
+  Netman.vcxproj -> C:\Users\yeom\source\repos\Netman\Debug\Netman.exe

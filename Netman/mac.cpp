@@ -3,9 +3,9 @@
 
 Mac::Mac(const std::string r) {
     unsigned int a, b, c, d, e, f;
-    int res = sscanf(r.c_str(), "%02X:%02X:%02X:%02X:%02X:%02X", &a, &b, &c, &d, &e, &f);
+    int res = sscanf_s(r.c_str(), "%02X:%02X:%02X:%02X:%02X:%02X", &a, &b, &c, &d, &e, &f);
     if (res != SIZE) {
-        fprintf(stderr, "Mac::Mac sscanf return %d r=%s\n", res, r.c_str());
+        fprintf_s(stderr, "Mac::Mac sscanf return %d r=%s\n", res, r.c_str());
         return;
     }
     mac_[0] = a;
@@ -18,7 +18,7 @@ Mac::Mac(const std::string r) {
 
 Mac::operator std::string() const {
     char buf[32]; // enough size
-    sprintf(buf, "%02x:%02X:%02X:%02X:%02X:%02X",
+    sprintf_s(buf, "%02x:%02X:%02X:%02X:%02X:%02X",
         mac_[0],
         mac_[1],
         mac_[2],

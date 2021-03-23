@@ -31,10 +31,17 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
+	CWinThread* m_pthread;
+	HANDLE hthread;
+	bool m_run, m_stop;
+	static UINT runthread(LPVOID pParam);
 	void setNicList();
-	void setIpList();
-	//void dev_info();
-	USHORT checksum(USHORT* buf, int size);
+	CString mac_info();
+	uint16_t calculate(uint16_t* buf, int size);
+	uint16_t checksum(USHORT* buff, int size);
+	uint16_t ip_checksum(uint8_t* buf);
+	void get_mac(char *dev);
+	void get_ip(char *dev);
 	CListCtrl m_niclist;
 	CListCtrl m_iplist;
 	afx_msg void OnBnClickedButton2();
@@ -44,4 +51,9 @@ public:
 	afx_msg void OnBnClickedButton3();
 	afx_msg void OnBnClickedButton4();
 	afx_msg void OnBnClickedButton5();
+	afx_msg void OnBnClickedButton6();
+	afx_msg void OnLvnItemchangedList1(NMHDR* pNMHDR, LRESULT* pResult);
+	CEdit nic_choose;
+	CEdit m_nicip;
+	CEdit m_maclist;
 };

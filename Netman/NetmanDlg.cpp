@@ -6,15 +6,19 @@
 #include "framework.h"
 #include "Netman.h"
 #include "NetmanDlg.h"
+#include "thread"
 #include "afxdialogex.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #endif
+
+static Mac sel_mac;
+static int buf[10];
 
 
 // CNetmanDlg 대화 상자
-
 
 
 CNetmanDlg::CNetmanDlg(CWnd* pParent /*=nullptr*/)
@@ -30,6 +34,9 @@ void CNetmanDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_LIST2, m_iplist);
 	DDX_Control(pDX, IDC_IPADDRESS1, m_ip);
 	DDX_Control(pDX, IDC_IPADDRESS2, m_sub);
+	DDX_Control(pDX, IDC_EDIT1, nic_choose);
+	DDX_Control(pDX, IDC_EDIT2, m_nicip);
+	DDX_Control(pDX, IDC_EDIT3, m_maclist);
 }
 
 BEGIN_MESSAGE_MAP(CNetmanDlg, CDialogEx)
@@ -40,6 +47,8 @@ BEGIN_MESSAGE_MAP(CNetmanDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON3, &CNetmanDlg::OnBnClickedButton3)
 	ON_BN_CLICKED(IDC_BUTTON4, &CNetmanDlg::OnBnClickedButton4)
 	ON_BN_CLICKED(IDC_BUTTON5, &CNetmanDlg::OnBnClickedButton5)
+	ON_BN_CLICKED(IDC_BUTTON6, &CNetmanDlg::OnBnClickedButton6)
+	ON_NOTIFY(NM_DBLCLK, IDC_LIST1, &CNetmanDlg::OnLvnItemchangedList1)
 END_MESSAGE_MAP()
 
 
@@ -59,6 +68,7 @@ BOOL CNetmanDlg::OnInitDialog()
 	m_niclist.InsertColumn(2, _T("DESCRIPTION"), LVCFMT_CENTER, 300, -1);
 	m_niclist.InsertColumn(3, _T("IP"), LVCFMT_CENTER, 100, -1);
 	m_niclist.InsertColumn(4, _T("SUBNET MASK"), LVCFMT_CENTER, 150, -1);
+	m_niclist.InsertColumn(5, _T("MAC ADDRESS"), LVCFMT_CENTER, 150, -1);
 
 	//m_iplist.InsertColumn(0, _T("check"), LVCFMT_CENTER, 50, -1);
 	m_iplist.InsertColumn(0, _T("IP"), LVCFMT_CENTER, 220, -1);
@@ -66,6 +76,8 @@ BOOL CNetmanDlg::OnInitDialog()
 
 	setNicList();
 	//dev_info();
+	 
+	
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -117,9 +129,31 @@ void CNetmanDlg::setNicList()
 	if (ret == -1)
 	{
 		printf("pcap_findalldevs: %s\n", errbuf);
-		exit(1);
+		return;
 	}
 	UpdateData(TRUE);
+
+	CString strMac;
+	DWORD size = sizeof(PIP_ADAPTER_INFO);
+	std::vector<CString> v;
+
+	PIP_ADAPTER_INFO Info;
+	int result = GetAdaptersInfo(Info, &size);        
+	if (result == ERROR_BUFFER_OVERFLOW)
+	{
+		Info = (PIP_ADAPTER_INFO)malloc(size);
+		GetAdaptersInfo(Info, &size);
+	}
+	if (!Info) return;
+	do {
+		strMac.Format("%0.2X:%0.2X:%0.2X:%0.2X:%0.2X:%0.2X",
+			Info->Address[0], Info->Address[1], Info->Address[2], Info->Address[3], Info->Address[4], Info->Address[5]);
+		v.push_back(strMac);
+		Info = Info->Next;
+	} while (Info);
+
+
+	
 	int index = m_niclist.GetItemCount();
 	int i=0;
 	for (d = Devices; d != NULL; d = d->next) {		
@@ -136,17 +170,15 @@ void CNetmanDlg::setNicList()
 				{
 					m_niclist.SetItemText(index, 3, inet_ntoa(((struct sockaddr_in*)a->netmask)->sin_addr));
 				}
+				m_niclist.SetItemText(index, 4, v[index]);
 				break;
 			}
 		}
 	}
-	
-}
 
-void CNetmanDlg::setIpList() 
-{
 
 }
+
 void CNetmanDlg::OnBnClickedButton2() //multi-delete
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
@@ -169,6 +201,16 @@ void CNetmanDlg::OnBnClickedButton5() //delete all
 }
 
 
+void CNetmanDlg::OnBnClickedButton6() //select
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	//char* dev;
+	//GetDlgItemText(IDC_EDIT1, (CString)dev);
+	//return;
+	
+}
+
+
 
 void CNetmanDlg::OnBnClickedButton1() //add
 {
@@ -185,6 +227,7 @@ void CNetmanDlg::OnBnClickedButton1() //add
 	m_iplist.SetItemText(index, 1, strSubAddr);
 }
 
+
 USHORT CNetmanDlg::checksum(USHORT* buff, int size) {
 	unsigned long cksum = 0;
 	while (size > 1) {
@@ -199,38 +242,45 @@ USHORT CNetmanDlg::checksum(USHORT* buff, int size) {
 	return (USHORT)(~cksum);
 }
 
+USHORT checksum1(USHORT* buff, int size) {
+	unsigned long cksum = 0;
+	while (size > 1) {
+		cksum += *buff++;
+		size -= sizeof(USHORT);
+	}
+	if (size) {
+		cksum += *(UCHAR*)buff;
+	}
+	cksum = (cksum >> 16) + (cksum & 0xffff);
+	cksum += (cksum >> 16);
+	return (USHORT)(~cksum);
+}
 
-void CNetmanDlg::OnBnClickedButton3() //send_arp
+void CNetmanDlg::OnBnClickedButton3() //check ip
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	pcap_if_t* alldevs = NULL;
 	char errbuf[PCAP_ERRBUF_SIZE];
-	int offset = 0;
-	if (pcap_findalldevs(&alldevs, errbuf) == -1) {
-		AfxMessageBox(TEXT("dev find failed"));
-	}
-	if (alldevs == NULL) {
-		AfxMessageBox(TEXT("no dev found"));
-	}
+	Mac target_mac;
+	CString dev, mac, ip;
+	GetDlgItemText(IDC_EDIT1, dev);
+	GetDlgItemText(IDC_EDIT2, ip);
+	GetDlgItemText(IDC_EDIT3, mac);
 
-	pcap_if_t* d; int i, inum;
+	BYTE ip_[4];
+	CString strIpAddr;
+	m_ip.GetAddress(ip_[0], ip_[1], ip_[2], ip_[3]);
+	strIpAddr.Format(_T("%d.%d.%d.%d"), ip_[0], ip_[1], ip_[2], ip_[3]);
 
-
-	printf("enter the interface number: ");
-	scanf("%d", &inum);
-	for (d = alldevs, i = 0; i < inum - 1; d = d->next, i++); // jump to the i-th dev
-
-// open
-	pcap_t* handle = pcap_open_live(d->name, BUFSIZ, 1, 1000, errbuf);
+	pcap_t* handle = pcap_open_live(dev, BUFSIZ, 1, 1000, errbuf);
 	if (handle == nullptr) {
-		AfxMessageBox(TEXT("couldn't open device %s(%s)", d->name, errbuf));
-		pcap_freealldevs(alldevs);
+		AfxMessageBox(_T("couldn't open device %s(%s)", dev, errbuf));
+		return;
 	}
-	pcap_freealldevs(alldevs);
 
 	EthArpPacket request_packet;
+
 	request_packet.eth_.dmac_ = Mac("FF:FF:FF:FF:FF:FF");
-	request_packet.eth_.smac_ = Mac("14:B3:1F:19:03:A4");
+	request_packet.eth_.smac_ = Mac((std::string)mac);
 	request_packet.eth_.type_ = htons(EthHdr::Arp);
 
 	request_packet.arp_.hrd_ = htons(ArpHdr::ETHER);
@@ -239,98 +289,146 @@ void CNetmanDlg::OnBnClickedButton3() //send_arp
 	request_packet.arp_.pln_ = Ip::SIZE;
 	request_packet.arp_.op_ = htons(ArpHdr::Request);
 
-	request_packet.arp_.smac_ = Mac("14:B3:1F:19:03:A4");
-	request_packet.arp_.sip_ = htonl(Ip("10.0.2.15"));
+	request_packet.arp_.smac_ = Mac((std::string)mac);
+	request_packet.arp_.sip_ = htonl(Ip((std::string)ip));
 	request_packet.arp_.tmac_ = Mac("00:00:00:00:00:00");
-	request_packet.arp_.tip_ = htonl(Ip("10.0.2.254"));
+	request_packet.arp_.tip_ = htonl(Ip((std::string)strIpAddr));
 
 	int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&request_packet), sizeof(EthArpPacket));
 	if (res != 0) {
 		AfxMessageBox(TEXT("pcap_sendpacket return %d error %s", res, pcap_geterr(handle)));
+		return;
+	}
+
+	while (true) {
+		struct pcap_pkthdr* header;
+		const u_char* reply_packet;
+		int res = pcap_next_ex(handle, &header, &reply_packet);
+		if (res == 0) continue;
+		if (res == -1 || res == - 2) {
+			AfxMessageBox(_T("pcap_next_ex return %d(%s)", res, pcap_geterr(handle)));
+			return;
+		}
+
+		struct EthArpPacket* etharp = (struct EthArpPacket*)reply_packet;
+		
+		if (etharp->eth_.type_ == htons(EthHdr::Arp)
+			&& etharp->arp_.op_ == htons(ArpHdr::Reply)
+			&& etharp->arp_.sip_ == request_packet.arp_.tip_) {
+			int nsize = sizeof(ethernet_header)+sizeof(ip_header) + sizeof(icmp_header);
+			char* data = (char*)malloc(nsize);
+
+			ethernet_header* eth = (ethernet_header*)data;
+			eth->dmac_ = etharp->arp_.smac_;
+			eth->smac_ = Mac((std::string)mac);
+			eth->type_ = htons(EthHdr::Ip4);
+
+			ip_header* iph = (ip_header*)(data+14);
+			iph->ip_hl = 0x45;
+			iph->ip_tos = 0;
+			iph->ip_len = ntohs(nsize);
+			iph->ip_id = 0;
+			iph->ip_off = 0;
+			iph->ip_ttl = 128;
+			iph->ip_pro = 1;
+			iph->ip_chk = 0;
+			iph->sip = htonl(Ip((std::string)ip));
+			iph->dip = htonl(Ip((std::string)strIpAddr));
+			iph->ip_chk = checksum((USHORT*)iph, sizeof(ip_header));
+
+			icmp_header* icmph = (icmp_header*)(data + 34);
+			icmph->type = 8;
+			icmph->code = 0;
+			icmph->checksum = 0;
+			icmph->id = htons(1);
+			icmph->seq = htons(1);
+			icmph->checksum = checksum((USHORT*)icmph, sizeof(icmp_header));
+
+			for(int i=0; i<2; i++) {
+				int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(data), nsize);
+				if (res != 0) {
+					AfxMessageBox(TEXT("pcap_sendpacket return %d error %s", res, pcap_geterr(handle)));
+					return;
+				}
+				Sleep(100);
+				i++;
+			}
+
+			while (true) {
+				const u_char* icmp_reply;
+				int res = pcap_next_ex(handle, &header, &icmp_reply);
+				if (res == 0) continue;
+				if (res == -1 || res == -2) {
+					AfxMessageBox(_T("pcap_next_ex return %d(%s)", res, pcap_geterr(handle)));
+					return;
+				}
+
+				struct ping_* icmpReply = (struct ping_*)icmp_reply;
+				if (icmpReply->iph_.sip == iph->dip &&
+					icmpReply->icmp_.type == 0) {
+					MessageBox(_T("reply packet"));
+					break;
+				}
+			}
+			return;
+		}
 	}
 }
 
 
 void CNetmanDlg::OnBnClickedButton4() //send_icmp
 {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	WSADATA wsaData;
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다
+
+	BYTE ip_[4];
+	CString strIpAddr;
+	m_ip.GetAddress(ip_[0], ip_[1], ip_[2], ip_[3]);
+	strIpAddr.Format(_T("%d.%d.%d.%d"), ip_[0], ip_[1], ip_[2], ip_[3]);
+
+	WSADATA wsaData;  
 	SOCKET s;
 	SOCKADDR_STORAGE dest;
+
 	icmp_header* icmp = NULL;
-	char buf[sizeof(icmp_header) + 32];
+	char buf[sizeof(icmp_header)];
 
 	icmp = (icmp_header*)buf;
-	icmp->icmp_type = 8;
-	icmp->icmp_code = 0;
-	icmp->icmp_id = (unsigned short)GetCurrentProcessId;
-	icmp->icmp_checksum = 0;
-	icmp->icmp_seq = 0;
-	memset(&buf[sizeof(icmp_header)], '@', 32);
-	icmp->icmp_checksum = checksum((USHORT*)buf, sizeof(icmp_header) + 32);
+	icmp->type = 8;
+	icmp->code = 0;
+	icmp->id = 1;
+	icmp->checksum = 0;
+	icmp->seq = 1;
+	icmp->checksum = 0;
+
+	icmp->checksum = checksum((USHORT*)icmp, sizeof(icmp_header));
 
 	s = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (s == INVALID_SOCKET) {
 		AfxMessageBox(TEXT("WSAStartup error!"));
 	}
-
 	((SOCKADDR_IN*)&dest)->sin_family = AF_INET;
 	((SOCKADDR_IN*)&dest)->sin_port = htons(0);
-	((SOCKADDR_IN*)&dest)->sin_addr.S_un.S_addr = inet_addr("8.8.8.8");
+	((SOCKADDR_IN*)&dest)->sin_addr.S_un.S_addr = htonl(Ip((std::string)strIpAddr));
 
 	for (int i = 0; i < 4; i++) {
-		sendto(s, buf, sizeof(icmp_header) + 32, 0, (SOCKADDR*)&dest, sizeof(dest));
+		sendto(s, buf, sizeof(icmp_header), 0, (SOCKADDR*)&dest, sizeof(dest));
 		Sleep(100);
 	}
-	closesocket(s);
-	WSACleanup();
+	return;
 }
 
-/*void CNetmanDlg::dev_info() { //get local mac, ip
-	PIP_ADAPTER_INFO AdapterInfo;
-	CString ip_ ,mac_;
-	DWORD dwBufLen = sizeof(IP_ADAPTER_INFO);
-	int index = m_niclist.GetItemCount();
-	char* mac_addr = (char*)malloc(18);
-
-	AdapterInfo = (IP_ADAPTER_INFO*)malloc(sizeof(IP_ADAPTER_INFO));
-	if (AdapterInfo == NULL) {
-		AfxMessageBox(TEXT("Error allocating memory needed to call GetAdaptersinfo"));
-		free(mac_addr);
-		return; // it is safe to call free(NULL)
-	}
-
-	// Make an initial call to GetAdaptersInfo to get the necessary size into the dwBufLen variable
-	if (GetAdaptersInfo(AdapterInfo, &dwBufLen) == ERROR_BUFFER_OVERFLOW) {
-		free(AdapterInfo);
-		AdapterInfo = (IP_ADAPTER_INFO*)malloc(dwBufLen);
-		if (AdapterInfo == NULL) {
-			AfxMessageBox(TEXT("Error allocating memory needed to call GetAdaptersinfo"));
-			free(mac_addr);
-			return;
-		}
-	}
-
-	if (GetAdaptersInfo(AdapterInfo, &dwBufLen) == NO_ERROR) {
-		// Contains pointer to current adapter info
-		PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
-		do {
-			// technically should look at pAdapterInfo->AddressLength
-			//   and not assume it is 6.
-			mac_.Format("%02x:02x:02x:02x:02x:02x",
-				pAdapterInfo->Address[0],
-				pAdapterInfo->Address[1],
-				pAdapterInfo->Address[2],
-				pAdapterInfo->Address[3],
-				pAdapterInfo->Address[4],
-				pAdapterInfo->Address[5]);
-			// print them all, return the last one.
-			// return mac_addr;
-
-			//printf("\n");
-			pAdapterInfo = pAdapterInfo->Next;
-		} while (pAdapterInfo);
-
-	}
-	free(AdapterInfo);
-}*/
+void CNetmanDlg::OnLvnItemchangedList1(NMHDR* pNMHDR, LRESULT* pResult) //nic_list
+{
+	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	NM_LISTVIEW* pNMListView = (NM_LISTVIEW*)pNMHDR;
+	int idx = pNMListView->iItem;
+	CString sIndexValue;
+	sIndexValue = m_niclist.GetItemText(idx, 0);
+	CString sMac = m_niclist.GetItemText(idx, 4);
+	CString sIp = m_niclist.GetItemText(idx, 2);
+	SetDlgItemText(IDC_EDIT1, sIndexValue);
+	SetDlgItemText(IDC_EDIT2, sIp);
+	SetDlgItemText(IDC_EDIT3, sMac);
+	*pResult = 0;
+}

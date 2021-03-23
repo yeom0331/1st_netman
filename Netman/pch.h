@@ -4,10 +4,9 @@
 // 그러나 여기에 나열된 파일은 빌드 간 업데이트되는 경우 모두 다시 컴파일됩니다.
 // 여기에 자주 업데이트할 파일을 추가하지 마세요. 그러면 성능이 저하됩니다.
 
-#ifndef PCH_H
-#define PCH_H
-
 // 여기에 미리 컴파일하려는 헤더 추가
+
+#pragma once
 #include "framework.h"
 #include "pcap.h"
 #include <iostream>
@@ -18,11 +17,7 @@
 #include "arphdr.h"
 #include "icmphdr.h"
 #pragma comment(lib, "wpcap.lib")
-
 #include <stdio.h>
-#include <Windows.h>
 #include <Iphlpapi.h>
-#include <Assert.h>
 #pragma comment(lib, "iphlpapi.lib")
 
-#endif //PCH_H

@@ -2,6 +2,9 @@
 
 #include <cstdint>
 #include <string>
+#include <iostream>
+#include <vector>
+#include <string>
 
 struct Ip final {
     static const int SIZE = 4;

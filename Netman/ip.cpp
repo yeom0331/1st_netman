@@ -21,4 +21,3 @@ Ip::operator std::string() const {
         (ip_ & 0x000000FF));
     return std::string(buf);
 }
-

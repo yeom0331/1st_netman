@@ -20,4 +20,11 @@
 #include <stdio.h>
 #include <Iphlpapi.h>
 #pragma comment(lib, "iphlpapi.lib")
-
+#include <thread>
+#include <mutex>
+#include <map>
+using std::thread;
+using std::mutex;
+using std::string;
+using std::vector;
+using std::map;

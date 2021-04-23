@@ -1,11 +1,7 @@
 ﻿  NetmanDlg.cpp
-C:\Users\yeom\source\repos\Netman\netman_semi\Netman\NetmanDlg.cpp(167,38): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
-C:\Users\yeom\source\repos\Netman\netman_semi\Netman\NetmanDlg.cpp(171,38): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
-C:\Users\yeom\source\repos\Netman\netman_semi\Netman\NetmanDlg.cpp(276,17): warning C4002: 함수 같은 매크로 호출 '_T'에 대해 인수가 너무 많습니다.
-C:\Users\yeom\source\repos\Netman\netman_semi\Netman\NetmanDlg.cpp(299,17): warning C4002: 함수 같은 매크로 호출 'TEXT'에 대해 인수가 너무 많습니다.
-C:\Users\yeom\source\repos\Netman\netman_semi\Netman\NetmanDlg.cpp(309,18): warning C4002: 함수 같은 매크로 호출 '_T'에 대해 인수가 너무 많습니다.
-C:\Users\yeom\source\repos\Netman\netman_semi\Netman\NetmanDlg.cpp(350,20): warning C4002: 함수 같은 매크로 호출 'TEXT'에 대해 인수가 너무 많습니다.
-C:\Users\yeom\source\repos\Netman\netman_semi\Netman\NetmanDlg.cpp(362,20): warning C4002: 함수 같은 매크로 호출 '_T'에 대해 인수가 너무 많습니다.
-C:\Users\yeom\source\repos\Netman\netman_semi\Netman\NetmanDlg.cpp(388,10): warning C4101: 'wsaData' :참조되지 않은 지역 변수입니다.
-C:\Users\yeom\source\repos\Netman\netman_semi\Netman\NetmanDlg.cpp(141): warning C4700: 초기화되지 않은 'Info' 지역 변수를 사용했습니다.
+C:\Users\yeom\source\repos\Netman\netman_semi\Netman\NetmanDlg.cpp(168,38): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+C:\Users\yeom\source\repos\Netman\netman_semi\Netman\NetmanDlg.cpp(172,38): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+C:\Users\yeom\source\repos\Netman\netman_semi\Netman\NetmanDlg.cpp(179,38): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+C:\Users\yeom\source\repos\Netman\netman_semi\Netman\NetmanDlg.cpp(183,38): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+C:\Users\yeom\source\repos\Netman\netman_semi\Netman\NetmanDlg.cpp(142): warning C4700: 초기화되지 않은 'Info' 지역 변수를 사용했습니다.
   Netman.vcxproj -> C:\Users\yeom\source\repos\Netman\netman_semi\Debug\Netman.exe

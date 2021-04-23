@@ -2,7 +2,6 @@
 #include "mac.h"
 #include "ip.h"
 #include "pch.h"
-#define CARRY 65536
 
 #pragma pack(push,1)
 struct ethernet_header {
@@ -37,14 +36,15 @@ struct ip_header {
 };
 #pragma pack(pop)
 
+
 #pragma pack(push,1)
-struct icmp_header {
+typedef struct icmp_header {
     uint8_t type;
     uint8_t code;
     uint16_t checksum;
     uint16_t id;
     uint16_t seq;
-};
+}IcmpHeader;
 #pragma pack(pop)
 
 

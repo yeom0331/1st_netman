@@ -17,16 +17,6 @@ struct ArpHdr final {
     Mac      tmac_;
     Ip       tip_;
 
-    uint16_t hrd() { return ntohs(hrd_); }
-    uint16_t pro() { return ntohs(pro_); }
-    uint8_t  hln() { return hln_; }
-    uint8_t  pln() { return pln_; }
-    uint16_t op() { return ntohs(op_); }
-    Mac      smac() { return smac_; }
-    Ip       sip() { return ntohl(sip_); }
-    Mac      tmac() { return tmac_; }
-    Ip       tip() { return ntohl(tip_); }
-
     typedef enum {
         NETROM = 0,  // from KA9Q: NET/ROM pseudo
         ETHER = 1,  // Ethernet 10Mbps
